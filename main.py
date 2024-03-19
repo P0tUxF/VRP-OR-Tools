@@ -10,6 +10,9 @@ import vrplib
 
 # Read Solomon formatted instances
 instance = vrplib.read_instance("solomon_25/C101.txt", instance_format="solomon")
+#print(f"instance:\n{instance}")
+
+print(f"instance: {instance.get('name')}")
 
 coords = instance["node_coord"].tolist()
 # Calculate distance matrix
