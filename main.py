@@ -26,6 +26,7 @@ data["depot"] = 0
 data["time_windows"] = [
     tuple((tw[0] * COEF, tw[1] * COEF)) for tw in instance["time_window"].tolist()
 ]
+data["services"] = instance["service_time"].tolist() * COEF
 data["demands"] = instance["demand"].tolist()
 data["vehicle_capacities"] = [instance["capacity"]] * instance["vehicles"]
 
@@ -63,7 +64,7 @@ def time_callback(from_index, to_index):
     # Convert from routing variable Index to time matrix NodeIndex.
     from_node = manager.IndexToNode(from_index)
     to_node = manager.IndexToNode(to_index)
-    return data["time_matrix"][from_node][to_node]
+    return data["time_matrix"][from_node][to_node] + data["services"][from_node]
 
 
 transit_callback_index = routing.RegisterTransitCallback(time_callback)
