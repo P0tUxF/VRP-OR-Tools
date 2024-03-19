@@ -118,22 +118,27 @@ solution = routing.SolveWithParameters(search_parameters)
 def print_solution(manager, routing, solution):
     """Prints solution on console."""
     print(f"Objective: {solution.ObjectiveValue()}")
+    capacity_dimension = routing.GetDimensionOrDie("Capacity")
     time_dimension = routing.GetDimensionOrDie("Time")
     total_time = 0
     for vehicle_id in range(manager.GetNumberOfVehicles()):
         index = routing.Start(vehicle_id)
         plan_output = f"Route for vehicle {vehicle_id}:\n"
         while not routing.IsEnd(index):
+            capacity_var = capacity_dimension.CumulVar(index)
             time_var = time_dimension.CumulVar(index)
             plan_output += (
                 f"{manager.IndexToNode(index)}"
+                f" Load({solution.Value(capacity_var)})"
                 f" Time({solution.Min(time_var)},{solution.Max(time_var)})"
                 " -> "
             )
             index = solution.Value(routing.NextVar(index))
+        capacity_var = capacity_dimension.CumulVar(index)
         time_var = time_dimension.CumulVar(index)
         plan_output += (
             f"{manager.IndexToNode(index)}"
+            f" Load({solution.Value(capacity_var)})"
             f" Time({solution.Min(time_var)},{solution.Max(time_var)})\n"
         )
         plan_output += f"Time of the route: {solution.Min(time_var)}min\n"
