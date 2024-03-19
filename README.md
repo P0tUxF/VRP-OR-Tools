@@ -21,6 +21,15 @@ To use this repository, follow these steps:
 3. Run the provided scripts to generate and solve Solomon instances with time windows and capacity constraints using the Google OR-Tools Solver.
 4. Analyze the results to evaluate the solver's performance.
 
+TLDR:
+
+```sh
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install -r requirements.txt
+./main.py
+```
+
 ## Repository Structure
 
 - `solomon_25/`: Contains the Solomon instances files (.txt) with time window and capacity constraints for 25 nodes.
