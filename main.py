@@ -96,12 +96,12 @@ search_parameters.log_search = True
 # Solve the problem.
 solution = routing.SolveWithParameters(search_parameters)
 
-def print_solution(data, manager, routing, solution):
+def print_solution(manager, routing, solution):
     """Prints solution on console."""
     print(f"Objective: {solution.ObjectiveValue()}")
     time_dimension = routing.GetDimensionOrDie("Time")
     total_time = 0
-    for vehicle_id in range(data["num_vehicles"]):
+    for vehicle_id in range(manager.GetNumberOfVehicles()):
         index = routing.Start(vehicle_id)
         plan_output = f"Route for vehicle {vehicle_id}:\n"
         while not routing.IsEnd(index):
@@ -120,8 +120,8 @@ def print_solution(data, manager, routing, solution):
         plan_output += f"Time of the route: {solution.Min(time_var)}min\n"
         print(plan_output)
         total_time += solution.Min(time_var)
-    print(f"Total time of all routes: {total_time}min")	
+    print(f"Total time of all routes: {total_time}min")
 
 if solution:
-	print_solution(data, manager, routing, solution)
-	
+	print_solution(manager, routing, solution)
+
