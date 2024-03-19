@@ -20,13 +20,13 @@ dist_matrix = distance_matrix(coords, coords)
 dist_matrix = dist_matrix * 500
 data = {}
 data["time_matrix"] = dist_matrix.astype(int)
-data["num_vehicles"] = 25
+data["num_vehicles"] = instance['vehicles']
 data["depot"] = 0
 data["time_windows"] = [
     tuple((tw[0] * 500, tw[1] * 500)) for tw in instance["time_window"].tolist()
 ]
 data["demands"] = instance["demand"].tolist()
-data["vehicle_capacities"] = [200] * 25
+data["vehicle_capacities"] = [instance["capacity"]] * instance["vehicles"]
 
 manager = pywrapcp.RoutingIndexManager(
     len(data["time_matrix"]), data["num_vehicles"], data["depot"]
