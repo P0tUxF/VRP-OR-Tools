@@ -69,6 +69,7 @@ for location_idx, time_window in enumerate(data["time_windows"]):
 	if location_idx == data["depot"]:
 		continue
 	index = manager.NodeToIndex(location_idx)
+	print(f"Add TW: {location_idx}, [{time_window[0]},{time_window[1]}]")
 	time_dimension.CumulVar(index).SetRange(time_window[0], time_window[1])
 # Add time window constraints for each vehicle start node.
 depot_idx = data["depot"]
