@@ -31,6 +31,9 @@ data["vehicle_capacities"] = [instance["capacity"]] * instance["vehicles"]
 manager = pywrapcp.RoutingIndexManager(
     len(data["time_matrix"]), data["num_vehicles"], data["depot"]
 )
+print(f"number of nodes: {manager.GetNumberOfNodes()}")
+print(f"number of vehicles: {manager.GetNumberOfVehicles()}")
+print(f"depot: {data['depot']}")
 
 routing = pywrapcp.RoutingModel(manager)
 
@@ -141,3 +144,5 @@ def print_solution(manager, routing, solution):
 
 if solution:
     print_solution(manager, routing, solution)
+else:
+    print("No solution found!")
