@@ -7,6 +7,7 @@ from ortools.constraint_solver import pywrapcp
 from scipy.spatial import distance_matrix
 import vrplib
 
+COEF = 500
 
 # Read Solomon formatted instances
 instance = vrplib.read_instance("solomon_25/C101.txt", instance_format="solomon")
@@ -17,14 +18,15 @@ print(f"instance: {instance.get('name')}")
 coords = instance["node_coord"].tolist()
 # Calculate distance matrix
 dist_matrix = distance_matrix(coords, coords)
-dist_matrix = dist_matrix * 500
+dist_matrix = dist_matrix * COEF
 data = {}
 data["time_matrix"] = dist_matrix.astype(int)
-data["num_vehicles"] = instance['vehicles']
+data["num_vehicles"] = instance["vehicles"]
 data["depot"] = 0
 data["time_windows"] = [
-    tuple((tw[0] * 500, tw[1] * 500)) for tw in instance["time_window"].tolist()
+    tuple((tw[0] * COEF, tw[1] * COEF)) for tw in instance["time_window"].tolist()
 ]
+data["services"] = instance["service_time"].tolist() * COEF
 data["demands"] = instance["demand"].tolist()
 data["vehicle_capacities"] = [instance["capacity"]] * instance["vehicles"]
 
@@ -34,6 +36,7 @@ manager = pywrapcp.RoutingIndexManager(
 print(f"number of nodes: {manager.GetNumberOfNodes()}")
 print(f"number of vehicles: {manager.GetNumberOfVehicles()}")
 print(f"depot: {data['depot']}")
+
 
 routing = pywrapcp.RoutingModel(manager)
 
@@ -61,7 +64,7 @@ def time_callback(from_index, to_index):
     # Convert from routing variable Index to time matrix NodeIndex.
     from_node = manager.IndexToNode(from_index)
     to_node = manager.IndexToNode(to_index)
-    return data["time_matrix"][from_node][to_node]
+    return data["time_matrix"][from_node][to_node] + data["services"][from_node]
 
 
 transit_callback_index = routing.RegisterTransitCallback(time_callback)
@@ -84,7 +87,7 @@ for location_idx, time_window in enumerate(data["time_windows"]):
     if location_idx == data["depot"]:
         continue
     index = manager.NodeToIndex(location_idx)
-    print(f"Add TW: {location_idx}, [{time_window[0]},{time_window[1]}]")
+    print(f"Add TW: {location_idx}, [{time_window[0]/COEF},{time_window[1]/COEF}]")
     time_dimension.CumulVar(index).SetRange(time_window[0], time_window[1])
 # Add time window constraints for each vehicle start node.
 depot_idx = data["depot"]
@@ -101,9 +104,9 @@ for i in range(data["num_vehicles"]):
 
 # Setting first solution heuristic.
 search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-# search_parameters.first_solution_strategy = (
-# routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-# )
+search_parameters.first_solution_strategy = (
+    routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+)
 search_parameters.local_search_metaheuristic = (
     routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
 )
@@ -130,7 +133,7 @@ def print_solution(manager, routing, solution):
             plan_output += (
                 f"{manager.IndexToNode(index)}"
                 f" Load({solution.Value(capacity_var)})"
-                f" Time({solution.Min(time_var)},{solution.Max(time_var)})"
+                f" Time({solution.Min(time_var)/COEF},{solution.Max(time_var)/COEF})"
                 " -> "
             )
             index = solution.Value(routing.NextVar(index))
@@ -139,11 +142,11 @@ def print_solution(manager, routing, solution):
         plan_output += (
             f"{manager.IndexToNode(index)}"
             f" Load({solution.Value(capacity_var)})"
-            f" Time({solution.Min(time_var)},{solution.Max(time_var)})\n"
+            f" Time({solution.Min(time_var)/COEF},{solution.Max(time_var)/COEF})\n"
         )
-        plan_output += f"Time of the route: {solution.Min(time_var)}min\n"
+        plan_output += f"Time of the route: {solution.Min(time_var)/COEF}min\n"
         print(plan_output)
-        total_time += solution.Min(time_var)
+        total_time += solution.Min(time_var)/COEF
     print(f"Total time of all routes: {total_time}min")
 
 
